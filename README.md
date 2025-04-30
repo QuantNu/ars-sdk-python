@@ -1,108 +1,163 @@
-# Agent Registration Server Python Client
+# ARS Python SDK
 
-A Python client library for interacting with the Agent Registration Server (ARS).
+Python SDK for the Agent Registration Server (ARS).
+
+## Overview
+
+The ARS Python SDK provides a client library for interacting with the Agent Registration Server, enabling Python applications to register agents, discover capabilities, manage sessions, and execute operations across different agent protocols.
 
 ## Installation
+
+### For Users
 
 ```bash
 pip install ars-client
 ```
 
-Or install from source:
+### For Developers
+
+Clone the repository and install in development mode:
 
 ```bash
-git clone https://github.com/yourusername/ars.git
+git clone https://github.com/quantnu/ars.git
 cd ars/sdk/python
-pip install -e .
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -e ".[dev]"
+```
+
+## Building Independently
+
+The Python SDK can be built independently using the included Makefile:
+
+```bash
+# Create virtual environment, install dependencies, and build
+make
+
+# Individual steps
+make venv      # Create virtual environment
+make setup     # Install dependencies
+make build     # Build the package
+make test      # Run tests
+make clean     # Clean build artifacts
+make dist      # Create distribution packages
+```
+
+If you don't have `make` available, you can use these commands directly:
+
+```bash
+# Create virtual environment
+python -m venv venv
+
+# Install in development mode with dev dependencies
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -e ".[dev]"
+
+# Run tests
+pytest tests/
+
+# Build distribution packages
+python setup.py sdist bdist_wheel
 ```
 
 ## Usage
 
 ```python
-from ars_client import ARSClient
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives import serialization
+from ars_client import ARSClient, Protocol, TrustLevel
 
 # Create client
-client = ARSClient("https://ars.example.com")
+client = ARSClient(server_url="https://ars.example.com")
 
-# Generate a key pair
-private_key = rsa.generate_private_key(
-    public_exponent=65537,
-    key_size=2048,
+# Register an agent
+agent, token = client.register_agent(
+    name="Example Agent",
+    description="An example agent demonstrating basic functionality",
+    capabilities=["translate", "summarize"],
+    endpoint="https://example.com/agent",
+    protocol=Protocol.MCP,
+    protocol_version="1.0",
+    public_key="example-public-key"
 )
 
-public_key = private_key.public_key().public_bytes(
-    encoding=serialization.Encoding.DER,
-    format=serialization.PublicFormat.SubjectPublicKeyInfo
-)
-
-# Register the agent
-result = client.register_agent(
-    name="My Agent",
-    version="1.0.0",
-    endpoint="https://myagent.example.com/api",
-    capabilities=["query", "response"],
-    public_key=public_key,
-    metadata={"description": "My awesome agent"}
-)
-
-# Save the agent ID and token for future sessions
-agent_id = result["agent"]["id"]
-token = result["token"]
-
-# Discover other agents
+# Discover agents with specific capabilities
 agents = client.discover_agents(
-    capabilities=["query"],
-    limit=5
+    capabilities=["translate"],
+    trust_levels=[TrustLevel.VERIFIED, TrustLevel.PARTNER]
 )
 
-print(f"Found {agents['total']} agents with 'query' capability")
-
-# Get a specific agent
-agent = client.get_agent("some-agent-id")
-print(f"Agent name: {agent['name']}")
-
-# Update your agent
-client.update_agent(
-    version="1.0.1",
-    metadata={"status": "active"}
+# Execute a task
+result = client.execute_task(
+    "translate",
+    {
+        "text": "Hello world",
+        "source_language": "en",
+        "target_language": "fr"
+    }
 )
 
-# Deregister when done
-client.deregister_agent()
+print(result)  # "Bonjour le monde"
 ```
 
-## API Reference
-
-### ARSClient
+## Session Management
 
 ```python
-client = ARSClient(server_url, agent_id=None, auth_token=None)
+from ars_client_with_sessions import ARSSessionClient
+
+# Create session-aware client
+client = ARSSessionClient(server_url="https://ars.example.com")
+
+# Create a session
+session, session_token = client.create_session(
+    initial_data={
+        "context": {
+            "user": "user-123",
+            "preferences": {
+                "language": "en"
+            }
+        }
+    }
+)
+
+# Execute task using session context
+result = client.execute_task_with_session(
+    "translate",
+    {
+        "text": "Hello world", 
+        "target_language": "fr"
+    },
+    session_id=session.id
+)
+
+# Update session with new information
+client.update_session(
+    session.id,
+    update_data={
+        "context": {
+            "history": [
+                {
+                    "task": "translate",
+                    "input": {"text": "Hello world", "target_language": "fr"},
+                    "output": "Bonjour le monde"
+                }
+            ]
+        }
+    }
+)
 ```
 
-Create a new client with optional agent ID and token if already registered.
+## Features
 
-### Methods
+- **Agent Registration**: Register agents with the ARS
+- **Agent Discovery**: Find agents based on capabilities and trust levels
+- **Trust Verification**: Verify agent identity and trust levels
+- **Session Management**: Maintain stateful interactions between agents
+- **Cross-Protocol Operation**: Work with agents across different protocols
+- **Error Handling**: Comprehensive error handling and reporting
 
-- `register_agent(name, version, endpoint, capabilities, public_key, metadata=None)`: Register a new agent
-- `discover_agents(capabilities=None, metadata_filter=None, limit=20, offset=0)`: Find agents matching criteria
-- `get_agent(agent_id)`: Get details for a specific agent
-- `update_agent(name=None, version=None, endpoint=None, capabilities=None, metadata=None)`: Update your agent
-- `deregister_agent()`: Remove your agent from the registry
-- `verify_agent(agent_id, challenge, signature)`: Verify another agent's identity
+## Contributing
 
-## Error Handling
-
-All methods raise exceptions if the server returns an error status. You should handle these exceptions in your code:
-
-```python
-try:
-    agents = client.discover_agents(capabilities=["query"])
-except Exception as e:
-    print(f"Error discovering agents: {e}")
-```
+Contributions are welcome! Please see the main repository's CONTRIBUTING.md for guidelines.
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the LICENSE file for details.

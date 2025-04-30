@@ -1,0 +1,127 @@
+# Python specific
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Environments
+.env
+.env.*
+!.env.example
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+pyenv.cfg
+pip-selfcheck.json
+pyvenv.cfg
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+test-reports/
+junit-*.xml
+pytest-*.xml
+pytest.xml
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Logs
+logs/
+*.log
+
+# Editor directories and files
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.default
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Generated protobuf files
+*_pb2.py
+*_pb2_grpc.py
+
+# Documentation
+/docs/_build/
+/docs/api/
+/docs/generated/
+/site/
+.pdoc/
+
+# Build artifacts
+/.pybuilder/
+/target/
+
+# Poetry
+poetry.lock
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# Project specific
+.secrets/
+.apikey
+keys/
+secrets.json
+credentials.json
+
+# Benchmark and profiling
+prof/
+benchmarks/output/
+.benchmarks/
+profile_results/
+
+# CI/CD artifacts
+.coverage.*
+nohup.out
+
+# Example outputs
+examples/**/__pycache__/
+examples/**/output/
+examples/**/*.pyc
+
+# Generated files
+generated/
+**/generated_*.py
